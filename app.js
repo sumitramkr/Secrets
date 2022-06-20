@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema({
   password: String,
 });
 
+userSchema.plugin(encrypt, { secret: secret });
+
 const User = new mongoose.model("User", userSchema);
 
 app.get("/", function (req, res) {
