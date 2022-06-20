@@ -30,6 +30,41 @@ app.get("/register", function (req, res) {
   res.render("register");
 });
 
+app.post("/register", function (req, res) {
+  var newUser = new User({
+    email: req.body.username,
+    password: req.body.password,
+  });
+  newUser.save(function (err) {
+    if (!err) {
+      res.render("secrets");
+    } else {
+      res.send("Try again");
+    }
+  });
+});
+
+app.post("/login", function (req, res) {
+  const username = req.body.username;
+  const password = req.body.password;
+
+  User.findOne({ email: username }, function (err, foundUser) {
+    if (err) {
+      console.log(err);
+    } else {
+      if (foundUser) {
+        if (foundUser.password === password) {
+          res.render("secrets");
+        } else {
+          res.send("Wrong password");
+        }
+      } else {
+        res.render("register");
+      }
+    }
+  });
+});
+
 app.listen(4100, function () {
   console.log("Connected on port 4100");
 });
