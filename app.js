@@ -67,6 +67,11 @@ app.get("/secrets", function (req, res) {
   }
 });
 
+app.get("/logout", function (req, res) {
+  req.logout();
+  res.redirect("/");
+});
+
 app.post("/register", function (req, res) {
   // bcrypt.hash(req.body.password, 10, function (err, hashedPassword) {
   //   if (err) {
