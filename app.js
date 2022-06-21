@@ -68,8 +68,15 @@ app.get("/secrets", function (req, res) {
 });
 
 app.get("/logout", function (req, res) {
-  req.logout();
-  res.redirect("/");
+  req.logout(function (err) {
+    if (err) {
+      console.log(err);
+    } else {
+      req.session.destroy(function (err) {
+        res.redirect("/");
+      });
+    }
+  });
 });
 
 app.post("/register", function (req, res) {
