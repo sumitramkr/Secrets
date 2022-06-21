@@ -103,8 +103,8 @@ app.post("/register", function (req, res) {
 });
 
 app.post("/login", function (req, res) {
-  const username = req.body.username;
-  const password = req.body.password;
+  // const username = req.body.username;
+  // const password = req.body.password;
 
   // User.findOne({ email: username }, function (err, foundUser) {
   //   if (err) {
@@ -121,6 +121,21 @@ app.post("/login", function (req, res) {
   //     }
   //   }
   // });
+
+  const oldUser = new User({
+    username: req.body.username,
+    password: req.body.password,
+  });
+
+  req.login(oldUser, function (err) {
+    if (err) {
+      console.log(err);
+    } else {
+      passport.authenticate("local")(req, res, function () {
+        res.redirect("/secrets");
+      });
+    }
+  });
 });
 
 app.listen(4100, function () {
