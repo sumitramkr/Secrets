@@ -17,12 +17,13 @@ const app = express();
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(
   session({
     secret: "Some string.",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true },
+    // cookie: { secure: true },
   })
 );
 
@@ -36,6 +37,8 @@ mongoose.connect("mongodb://localhost:27017/userDB", { useNewUrlParser: true });
 const userSchema = new mongoose.Schema({
   email: String,
   password: String,
+  googleId: String,
+  secret: String,
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -103,14 +106,43 @@ app.get("/register", function (req, res) {
 });
 
 app.get("/secrets", function (req, res) {
+  // res.render("secrets");
+  User.find({ secret: { $ne: null } }, function (err, foundUsers) {
+    if (err) {
+      console.log(err);
+    } else {
+      if (foundUsers) {
+        res.render("secrets", { userWithSecrets: foundUsers });
+      }
+    }
+  });
+});
+
+app.get("/submit", function (req, res) {
   if (req.isAuthenticated) {
-    res.render("secrets");
+    res.render("submit");
   } else {
     res.redirect("/login"); // as we want user to be authenticated to log in
   }
 });
 
-app.get("/logout", function (req, res) {
+app.post("/submit", function (req, res) {
+  const submittedSecret = req.body.secret;
+  // console.log(req.user.id);
+
+  User.findById(req.user.id, function (err, foundUser) {
+    if (err) {
+      console.log(err);
+    } else {
+      foundUser.secret = submittedSecret;
+      foundUser.save(function () {
+        res.redirect("/secrets");
+      });
+    }
+  });
+});
+
+app.post("/logout", function (req, res) {
   req.logout(function (err) {
     if (err) {
       console.log(err);
@@ -177,12 +209,12 @@ app.post("/login", function (req, res) {
   //   }
   // });
 
-  const oldUser = new User({
+  const user = new User({
     username: req.body.username,
     password: req.body.password,
   });
 
-  req.login(oldUser, function (err) {
+  req.login(user, function (err) {
     if (err) {
       console.log(err);
     } else {
